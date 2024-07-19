@@ -3,11 +3,11 @@
         {
             "name": "Target 1",
             "includePath": [
-                "c:\\Users\\Administrator\\Desktop\\stm32proj\\Externallib",
-                "c:\\Users\\Administrator\\Desktop\\stm32proj\\Libraries",
-                "c:\\Users\\Administrator\\Desktop\\stm32proj\\Startup",
-                "c:\\Users\\Administrator\\Desktop\\stm32proj\\User",
-                "c:\\Users\\Administrator\\Desktop\\stm32proj\\Hardware",
+                "c:\\Users\\Administrator\\smartfan\\smartfan\\Externallib",
+                "c:\\Users\\Administrator\\smartfan\\smartfan\\Libraries",
+                "c:\\Users\\Administrator\\smartfan\\smartfan\\Startup",
+                "c:\\Users\\Administrator\\smartfan\\smartfan\\User",
+                "c:\\Users\\Administrator\\smartfan\\smartfan\\Hardware",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include\\rw"
             ],

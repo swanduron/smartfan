@@ -33,3 +33,5 @@
 .\objects\main.o: .\Hardware\systick.h
 .\objects\main.o: .\Externallib\OLED.h
 .\objects\main.o: .\Externallib\OLED_Data.h
+.\objects\main.o: .\Hardware\pwm.h
+.\objects\main.o: .\Hardware\ic.h

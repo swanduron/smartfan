@@ -19,9 +19,6 @@ int main(void){
 	OLED_Update();
 	while(1){
 		encoderNum += getEncoderValue();
-		if (encoderNum < 0){
-			encoderNum = 0;
-		}
 		if (encoderNum > 100){
 			encoderNum = 100;
 		}

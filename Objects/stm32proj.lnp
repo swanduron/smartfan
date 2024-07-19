@@ -33,6 +33,8 @@
 ".\objects\key.o"
 ".\objects\systick.o"
 ".\objects\encoder.o"
+".\objects\pwm.o"
+".\objects\ic.o"
 --strict --scatter ".\Objects\stm32proj.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
