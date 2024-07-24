@@ -22,17 +22,18 @@ Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
 c:\Users\Administrator\smartfan\smartfan\stm32proj.uvprojx
-Project File Date:  07/19/2024
+Project File Date:  07/24/2024
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Target 1'
-compiling ic.c...
 compiling main.c...
-compiling pwm.c...
+User\main.c(14): warning:  #177-D: variable "lockFlag"  was declared but never referenced
+      bool lockFlag = false;
+User\main.c: 1 warning, 0 errors
 linking...
-Program Size: Code=4872 RO-data=2460 RW-data=28 ZI-data=2708  
-".\Objects\stm32proj.axf" - 0 Error(s), 0 Warning(s).
+Program Size: Code=8486 RO-data=2458 RW-data=44 ZI-data=2724  
+".\Objects\stm32proj.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 

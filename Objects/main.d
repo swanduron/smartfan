@@ -28,6 +28,7 @@
 .\objects\main.o: .\Libraries\stm32f10x_usart.h
 .\objects\main.o: .\Libraries\stm32f10x_wwdg.h
 .\objects\main.o: .\Libraries\misc.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\main.o: .\Hardware\encoder.h
 .\objects\main.o: .\Hardware\key.h
 .\objects\main.o: .\Hardware\systick.h
@@ -35,3 +36,4 @@
 .\objects\main.o: .\Externallib\OLED_Data.h
 .\objects\main.o: .\Hardware\pwm.h
 .\objects\main.o: .\Hardware\ic.h
+.\objects\main.o: .\Hardware\18b20.h
