@@ -19,18 +19,24 @@ int main(void){
 	pwmInit();
 	icInit();
     DS18B20_portInit();
-	
+	uint8_t boxed = 0;
+
 	while(1){
 		encoderNum += getEncoderValue();
 		if (encoderNum > 100){
 			encoderNum = 100;
 		}
+        PWM_SetCompare1(encoderNum);
         OLED_ShowNum(0,0,encoderNum, 3, 6);
+
         result = ds18b20GetTemp();
         if (result != 9999.0f){
             OLED_ShowFloatNum(0, 10, result, 3, 2, 6);
+            OLED_ShowStringBoxed(0, 30, "Hellow!", OLED_6X8, boxed);
+            boxed = !boxed;
         }
         OLED_ShowNum(0, 20, GetSysRunTime(), 18, 6);
+        OLED_DrawLine(0, 63, 128, 63);
 		keyVal = GetKeyVal();
         switch (keyVal)
         {
