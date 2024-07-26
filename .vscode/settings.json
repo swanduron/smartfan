@@ -1,0 +1,7 @@
+{
+    "cortex-debug.liveWatchRefreshRate": 200,
+    "cortex-debug.armToolchainPath": "",
+    "files.associations": {
+        "systick.h": "c"
+    }
+}

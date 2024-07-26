@@ -3,9 +3,9 @@
 #include "systick.h"
 
 static GPIO_InitTypeDef g_gpioList[] = {
-    {GPIO_Pin_0, GPIO_Speed_10MHz, GPIO_Mode_IPU},
-    {GPIO_Pin_1, GPIO_Speed_10MHz, GPIO_Mode_IPU},
     {GPIO_Pin_2, GPIO_Speed_10MHz, GPIO_Mode_IPU},
+    {GPIO_Pin_3, GPIO_Speed_10MHz, GPIO_Mode_IPU},
+    {GPIO_Pin_4, GPIO_Speed_10MHz, GPIO_Mode_IPU},
 };
 
 #define KEY_NUM_MAX (sizeof(g_gpioList) / sizeof(g_gpioList[0]))
@@ -86,7 +86,7 @@ static uint8_t KeyScan(uint8_t keyIndex){
 
 uint8_t GetKeyVal(void){
     uint8_t res = 0;
-    for (uint8_t i; i < KEY_NUM_MAX; i++){
+    for (uint8_t i = 0; i < KEY_NUM_MAX; i++){
         res = KeyScan(i);
         if(res != 0){
             break;

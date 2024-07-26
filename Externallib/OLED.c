@@ -600,7 +600,7 @@ void OLED_ShowString(int16_t X, int16_t Y, char *String, uint8_t FontSize)
 
 
 /**
-  * 函    数：OLED显示字符串
+  * 函    数：OLED显示带框字符串
   * 参    数：X 指定字符串左上角的横坐标，范围：-32768~32767，屏幕区域：0~127
   * 参    数：Y 指定字符串左上角的纵坐标，范围：-32768~32767，屏幕区域：0~63
   * 参    数：String 指定要显示的字符串，范围：ASCII码可见字符组成的字符串
@@ -613,7 +613,7 @@ void OLED_ShowString(int16_t X, int16_t Y, char *String, uint8_t FontSize)
 void OLED_ShowStringBoxed(int16_t X, int16_t Y, char *String, uint8_t FontSize, uint8_t boxed)
 {
 	uint8_t i, y_offset;
-	y_offset = FontSize == 6 ? 8 + 2 : 16 + 2;
+	y_offset = (FontSize == 6) ? (8 + 2) : (16 + 2);
 	for (i = 0; String[i] != '\0'; i++)		//遍历字符串的每个字符
 	{
 		/*调用OLED_ShowChar函数，依次显示每个字符*/
