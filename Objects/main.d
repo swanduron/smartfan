@@ -37,3 +37,4 @@
 .\objects\main.o: .\Hardware\pwm.h
 .\objects\main.o: .\Hardware\ic.h
 .\objects\main.o: .\Hardware\18b20.h
+.\objects\main.o: .\Hardware\utils.h

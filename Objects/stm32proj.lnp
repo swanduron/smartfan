@@ -36,6 +36,7 @@
 ".\objects\pwm.o"
 ".\objects\ic.o"
 ".\objects\18b20.o"
+".\objects\utils.o"
 --strict --scatter ".\Objects\stm32proj.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
