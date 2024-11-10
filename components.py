@@ -79,7 +79,6 @@ class tempSensor():
         # This dict is used
         self.tempStruct = {"sensor1": {"sensorStatus": False, "temp": 50},
                            "sensor2": {"sensorStatus": False, "temp": 50}}
-        # Inject the logic to ensure that the failure holder will set the sensorStatus to False when exception occurs
         try:
             self.sensor1ow = OneWire(sensorPin1)
             self.sensor1Obj = DS18X20(self.sensor1ow)
@@ -138,8 +137,16 @@ def button_action(pin, event, dataBuffer):
             dataBuffer["levels"]['highLevel'] += 10
             if dataBuffer["levels"]['highLevel'] > 70:
                 dataBuffer["levels"]['highLevel'] = 40
-        print(pin, event, dataBuffer)
+        # print(pin, event, dataBuffer)
 
+
+######################################################################
+# @brief Change the color of system status LED
+# @param def __init__(self, dataBuffer):
+#
+#   dataBuffer, the global data struct that uses to storage the information of the system
+# @return No explicit update. This class is responsible for update the LED color and refresh it twice a second
+######################################################################
 
 class statusDot():
 
@@ -151,7 +158,51 @@ class statusDot():
 
     def init(self):
         self.colorDotTimer = Timer()
-        self.colorDotTimer.init(period=100, mode=Timer.PERIODIC, callback=self.changeColor)
+        self.colorDotTimer.init(period=500, mode=Timer.PERIODIC, callback=self.changeColor)
 
     def changeColor(self, a):
         self.dataBuffer["dotColor"] = [random.randint(1, 100), random.randint(1, 100), random.randint(1, 100)]
+
+
+######################################################################
+# @brief Enable the file loader and track the change of the highlevel and low level
+# @param def __init__(self, dataBuffer):
+#
+#   dataBuffer, the global data struct that uses to storage the information of the system
+# @return No explicit update. This class is responsible for update the configuration from file and sync the
+#   change from the device using.
+######################################################################
+
+class fileObj():
+
+    def __init__(self, dataBuffer):
+        self.filePath = "config.json"
+        self.dataBuffer = dataBuffer
+
+    def init(self):
+        try:
+            with open('config.json', mode='r') as file_obj:
+                self.databuf = json.load(file_obj)
+            print("load config file successful!")
+            ## Add a configuration validator here
+        except Exception as e:
+            print(e)
+            self.databuf = {"levels": {"highLevel": 40, "lowLevel": 20}}
+            with open('config.json', mode='w') as file_obj:
+                json.dump(self.databuf, file_obj)
+            print("load config file failed and use self-generated config!")
+        self.dataCopy = json.loads(json.dumps(self.databuf))
+
+        self.dataBuffer['levels'] = self.databuf['levels']
+
+        self.configCheckTimer = Timer()
+        self.configCheckTimer.init(period=5000, mode=Timer.PERIODIC, callback=self.configCheck)
+
+    def configCheck(self, a):
+        print("check config", self.databuf["levels"], self.dataBuffer["levels"], self.dataCopy)
+        if self.databuf != self.dataCopy:
+            print("config different")
+            with open('config.json', mode='w') as file_obj:
+                json.dump(self.databuf, file_obj)
+            self.dataCopy = json.loads(json.dumps(self.databuf))
+            print(id(self.dataCopy), id(self.databuf))
