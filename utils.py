@@ -23,7 +23,8 @@ def rangeMapping(lowLevel, highLevel, temp):
 #     "sensors": {"sensor1": {"sensorStatus": True, "temp": 50},
 #                 "sensor2": {"sensorStatus": True, "temp": 50}},  # updated by sensor test
 #     "levels": {"highLevel": 50, "lowLevel": 10},  # updated by button event
-#     "gauges": {"fan1": 0}  # updated by gauge test
+#     "gauges": {"fan1": 0},  # updated by gauge test
+#     "dotColor": [15, 15, 15]
 # }
 # output
 # {
@@ -72,7 +73,15 @@ def dataComposer(globalDataBuffer):
 
 # This function is used to receive the data generated and collected thought other components
 #
-
+# Data sample
+# input
+# {
+#     "sensors": {"sensor1": {"sensorStatus": True, "temp": 50},
+#                 "sensor2": {"sensorStatus": True, "temp": 50}},  # updated by sensor test
+#     "levels": {"highLevel": 50, "lowLevel": 10},  # updated by button event
+#     "gauges": {"fan1": 0},  # updated by gauge test
+#     "dotColor": [15, 15, 15]
+# }
 #
 def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, t1OK, t2OK):
     stringBuffer = f"{dataBuffer['temp']:.2f}{dataBuffer['speed']:04d}"

@@ -200,6 +200,9 @@ class fileObj():
 
     def configCheck(self, a):
         print("check config", self.databuf["levels"], self.dataBuffer["levels"], self.dataCopy)
+        # The below code is used to sync the global dataBuffer to the private databuf. If the dataBuffer is changed, this function will write the config to flash
+        # The json loads and dumps are used to generate a new object of the configuration since the microypthon doesn't have the deepcopy function
+        self.databuf["levels"] = self.dataBuffer["levels"]
         if self.databuf != self.dataCopy:
             print("config different")
             with open('config.json', mode='w') as file_obj:
