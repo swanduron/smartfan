@@ -23,8 +23,14 @@ def rangeMapping(lowLevel, highLevel, temp):
 #     "sensors": {"sensor1": {"sensorStatus": True, "temp": 50},
 #                 "sensor2": {"sensorStatus": True, "temp": 50}},  # updated by sensor test
 #     "levels": {"highLevel": 50, "lowLevel": 10},  # updated by button event
-#     "gauges": {"fan1": 0},  # updated by gauge test
-#     "dotColor": [15, 15, 15]
+#     "gauges": {"fan1": 0}  # updated by gauge test
+#     "dotColor": [15, 15, 15],
+#     "opMode": 1, # opmode = 1 : flexible mode, opmode = 0 : fix mode
+#     # The boardMode is use to identify the different models of board.
+#     # 0 : basic board, with WS2132B, 2 temp sensors, 2 buttons, 1 fan, 1 display
+#     # 1 : easy board, has simple LED indicator
+#     # 2 : tiny board, has no display, for 5v fan
+#     "boardMode": 0
 # }
 # output
 # {
@@ -79,11 +85,26 @@ def dataComposer(globalDataBuffer):
 #     "sensors": {"sensor1": {"sensorStatus": True, "temp": 50},
 #                 "sensor2": {"sensorStatus": True, "temp": 50}},  # updated by sensor test
 #     "levels": {"highLevel": 50, "lowLevel": 10},  # updated by button event
-#     "gauges": {"fan1": 0},  # updated by gauge test
-#     "dotColor": [15, 15, 15]
+#     "gauges": {"fan1": 0}  # updated by gauge test
+#     "dotColor": [15, 15, 15],
+#     "opMode": 1, # opmode = 1 : flexible mode, opmode = 0 : fix mode
+#     # The boardMode is use to identify the different models of board.
+#     # 0 : basic board, with WS2132B, 2 temp sensors, 2 buttons, 1 fan, 1 display
+#     # 1 : easy board, has simple LED indicator
+#     # 2 : tiny board, has no display, for 5v fan
+#     "boardMode": 0
 # }
 #
-def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, t1OK, t2OK):
+def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED):
+
+    ### display the LED string following the temperature and speed
+    # show the modeLED
+    if dataBuffer["opMode"] == 1:
+        modeLED.value(1)
+    else:
+        modeLED.value(0)
+
+    # Build the string to display
     stringBuffer = f"{dataBuffer['temp']:.2f}{dataBuffer['speed']:04d}"
     MAX7219display.write_to_buffer_with_dots(stringBuffer)
     MAX7219display.display()

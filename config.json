@@ -1,1 +1,8 @@
-{"levels": {"highLevel": 60, "lowLevel": 0}}
+{
+  "levels": {
+    "highLevel": 40,
+    "lowLevel": 20
+  },
+  "opMode": 0,
+  "boardMode": 0
+}

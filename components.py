@@ -1,7 +1,7 @@
 from ds18x20 import DS18X20
 from onewire import OneWire
 
-from machine import Pin, SPI, Timer, PWM, WDT
+from machine import Pin, SPI, Timer, PWM, WDT, reset
 from mp_button import Button
 import json
 import time
@@ -27,16 +27,15 @@ import random
 #                 "sensor2": {"sensorStatus": True, "temp": 50}},  # updated by sensor test
 #     "levels": {"highLevel": 50, "lowLevel": 10},  # updated by button event
 #     "gauges": {"fan1": 0}  # updated by gauge test
+#     "dotColor": [15, 15, 15],
+#     "opMode": 1, # opmode = 1 : flexible mode, opmode = 0 : fix mode
+#     # The boardMode is use to identify the different models of board.
+#     # 0 : basic board, with WS2132B, 2 temp sensors, 2 buttons, 1 fan, 1 display
+#     # 1 : easy board, has simple LED indicator
+#     # 2 : tiny board, has no display, for 5v fan
+#     "boardMode": 0
 # }
 
-# {
-#     "temp": 22.22,
-#     "sensorActive": 1,
-#     "highLevel": 50,
-#     "lowLevel": 20,
-#     "speed": 2321,
-#     "alarmBit": True
-# }
 
 # @brief Enable the system fan speed control and update the speed gauge
 # @param def __init__(self, fanPin, dataBuffer):
@@ -137,6 +136,11 @@ def button_action(pin, event, dataBuffer):
             dataBuffer["levels"]['highLevel'] += 10
             if dataBuffer["levels"]['highLevel'] > 70:
                 dataBuffer["levels"]['highLevel'] = 40
+        # The board will restart when user change the status of the operation mode
+        elif pin == 23:
+            dataBuffer["opMode"] = 1 if dataBuffer["opMode"] == 0 else 0
+            time.sleep(1)
+            reset()
         # print(pin, event, dataBuffer)
 
 
@@ -187,7 +191,8 @@ class fileObj():
             ## Add a configuration validator here
         except Exception as e:
             print(e)
-            self.databuf = {"levels": {"highLevel": 40, "lowLevel": 20}}
+            self.databuf = {"levels": {"highLevel": 40, "lowLevel": 20},
+                            "opMode": 0, "boardMode": 0}
             with open('config.json', mode='w') as file_obj:
                 json.dump(self.databuf, file_obj)
             print("load config file failed and use self-generated config!")
@@ -203,6 +208,9 @@ class fileObj():
         # The below code is used to sync the global dataBuffer to the private databuf. If the dataBuffer is changed, this function will write the config to flash
         # The json loads and dumps are used to generate a new object of the configuration since the microypthon doesn't have the deepcopy function
         self.databuf["levels"] = self.dataBuffer["levels"]
+        self.databuf["opMode"] = self.dataBuffer["opMode"]
+        self.databuf["boardMode"] = self.dataBuffer["boardMode"]
+
         if self.databuf != self.dataCopy:
             print("config different")
             with open('config.json', mode='w') as file_obj:
