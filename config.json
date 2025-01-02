@@ -1,0 +1,9 @@
+{
+  "levels": {
+    "highLevel": 40,
+    "lowLevel": 20
+  },
+  "opMode": 0,
+  "boardMode": 0,
+  "manualLevel": 0
+}

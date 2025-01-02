@@ -1,7 +1,7 @@
 from ds18x20 import DS18X20
 from onewire import OneWire
 
-from machine import Pin, SPI, Timer, PWM, WDT
+from machine import Pin, SPI, Timer, PWM, WDT, reset
 from mp_button import Button
 import json
 import time
@@ -27,16 +27,15 @@ import random
 #                 "sensor2": {"sensorStatus": True, "temp": 50}},  # updated by sensor test
 #     "levels": {"highLevel": 50, "lowLevel": 10},  # updated by button event
 #     "gauges": {"fan1": 0}  # updated by gauge test
+#     "dotColor": [15, 15, 15],
+#     "opMode": 1, # opmode = 1 : flexible mode, opmode = 0 : fix mode
+#     # The boardMode is use to identify the different models of board.
+#     # 0 : basic board, with WS2132B, 2 temp sensors, 2 buttons, 1 fan, 1 display
+#     # 1 : easy board, has simple LED indicator
+#     # 2 : tiny board, has no display, for 5v fan
+#     "boardMode": 0
 # }
 
-# {
-#     "temp": 22.22,
-#     "sensorActive": 1,
-#     "highLevel": 50,
-#     "lowLevel": 20,
-#     "speed": 2321,
-#     "alarmBit": True
-# }
 
 # @brief Enable the system fan speed control and update the speed gauge
 # @param def __init__(self, fanPin, dataBuffer):
@@ -79,8 +78,10 @@ class tempSensor():
         # This dict is used
         self.tempStruct = {"sensor1": {"sensorStatus": False, "temp": 50},
                            "sensor2": {"sensorStatus": False, "temp": 50}}
+        self.sensorPin1 = sensorPin1
+        self.sensorPin2 = sensorPin2
         try:
-            self.sensor1ow = OneWire(sensorPin1)
+            self.sensor1ow = OneWire(self.sensorPin1)
             self.sensor1Obj = DS18X20(self.sensor1ow)
             self.sensor1Addr = self.sensor1Obj.scan()[0]
             self.sensor1Obj.resolution(self.sensor1Addr, 12)
@@ -89,7 +90,7 @@ class tempSensor():
             self.tempStruct["sensor1"]["sensorStatus"] = False
 
         try:
-            self.sensor2ow = OneWire(sensorPin2)
+            self.sensor2ow = OneWire(self.sensorPin2)
             self.sensor2Obj = DS18X20(self.sensor2ow)
             self.sensor2Addr = self.sensor2Obj.scan()[0]
             self.sensor2Obj.resolution(self.sensor2Addr, 12)
@@ -106,6 +107,8 @@ class tempSensor():
 
         try:
             sensor1Temp = self.sensor1Obj.read_temp(self.sensor1Addr)
+            # Add the assert to make sure the sensor is working. The disconnect sensor returns NoneType without any exception
+            assert sensor1Temp
             self.sensor1Obj.convert_temp()
             self.tempStruct["sensor1"]["temp"] = sensor1Temp
             self.tempStruct["sensor1"]["sensorStatus"] = True
@@ -114,6 +117,7 @@ class tempSensor():
 
         try:
             sensor2Temp = self.sensor2Obj.read_temp(self.sensor2Addr)
+            assert sensor2Temp
             self.sensor2Obj.convert_temp()
             self.tempStruct["sensor2"]["temp"] = sensor2Temp
             self.tempStruct["sensor2"]["sensorStatus"] = True
@@ -126,18 +130,40 @@ class tempSensor():
 
 def button_action(pin, event, dataBuffer):
     # print(f'Button connected to Pin {pin} has been {event}')
-
-    if event == Button.RELEASED:
-
-        if pin == 4:
-            dataBuffer["levels"]['lowLevel'] += 10
-            if dataBuffer["levels"]['lowLevel'] > 30:
-                dataBuffer["levels"]['lowLevel'] = 0
-        elif pin == 6:
-            dataBuffer["levels"]['highLevel'] += 10
-            if dataBuffer["levels"]['highLevel'] > 70:
-                dataBuffer["levels"]['highLevel'] = 40
+    # 1 is auto mode, 0 is fix mode
+    if dataBuffer["opMode"] == 1:
+        if event == Button.RELEASED:
+            if pin == 4:
+                dataBuffer["levels"]['lowLevel'] += 10
+                if dataBuffer["levels"]['lowLevel'] > 30:
+                    dataBuffer["levels"]['lowLevel'] = 0
+            elif pin == 6:
+                dataBuffer["levels"]['highLevel'] += 10
+                if dataBuffer["levels"]['highLevel'] > 70:
+                    dataBuffer["levels"]['highLevel'] = 40
+            # The board will restart when user change the status of the operation mode
+            elif pin == 23:
+                dataBuffer["opMode"] = 1 if dataBuffer["opMode"] == 0 else 0
+                print("mode changes!")
+                time.sleep(6) # 6 seconds are used to wait the file manager save this change.
+                reset()
+    elif dataBuffer["opMode"] == 0:
+        if event == Button.RELEASED:
+            if pin == 6:
+                dataBuffer["manualLevel"] += 1
+                if dataBuffer["manualLevel"] > 10:
+                    dataBuffer["manualLevel"] = 0
+            elif pin == 4:
+                dataBuffer["manualLevel"] -= 1
+                if dataBuffer["manualLevel"] < 0:
+                    dataBuffer["manualLevel"] = 10
+            elif pin == 23:
+                dataBuffer["opMode"] = 1 if dataBuffer["opMode"] == 0 else 0
+                print("mode changes!")
+                time.sleep(6)
+                reset()
         # print(pin, event, dataBuffer)
+
 
 
 ######################################################################
@@ -152,16 +178,20 @@ class statusDot():
 
     def __init__(self, dataBuffer):
         self.dataBuffer = dataBuffer
-        self.red = 0
-        self.green = 0
-        self.blue = 0
+        self.toggleFlag = 0
 
     def init(self):
         self.colorDotTimer = Timer()
         self.colorDotTimer.init(period=500, mode=Timer.PERIODIC, callback=self.changeColor)
 
     def changeColor(self, a):
-        self.dataBuffer["dotColor"] = [random.randint(1, 100), random.randint(1, 100), random.randint(1, 100)]
+        if self.toggleFlag == 0:
+            self.dataBuffer["dotColor"] = [random.randint(1, 100), random.randint(1, 100), random.randint(1, 100)]
+            self.toggleFlag = 1
+        else:
+            self.dataBuffer["dotColor"] = [2, 2, 2]
+            self.toggleFlag = 0
+        
 
 
 ######################################################################
@@ -187,19 +217,27 @@ class fileObj():
             ## Add a configuration validator here
         except Exception as e:
             print(e)
-            self.databuf = {"levels": {"highLevel": 40, "lowLevel": 20}}
+            self.databuf = {"levels": {"highLevel": 40, "lowLevel": 20},
+                            "opMode": 0, "boardMode": 0, "manualLevel": 0}
             with open('config.json', mode='w') as file_obj:
                 json.dump(self.databuf, file_obj)
             print("load config file failed and use self-generated config!")
         self.dataCopy = json.loads(json.dumps(self.databuf))
 
-        self.dataBuffer['levels'] = self.databuf['levels']
-
+        # self.dataBuffer['levels'] = self.databuf['levels']
+        self.dataBuffer.update(self.databuf)
         self.configCheckTimer = Timer()
         self.configCheckTimer.init(period=5000, mode=Timer.PERIODIC, callback=self.configCheck)
 
     def configCheck(self, a):
         print("check config", self.databuf["levels"], self.dataBuffer["levels"], self.dataCopy)
+        # The below code is used to sync the global dataBuffer to the private databuf. If the dataBuffer is changed, this function will write the config to flash
+        # The json loads and dumps are used to generate a new object of the configuration since the microypthon doesn't have the deepcopy function
+        self.databuf["levels"] = self.dataBuffer["levels"]
+        self.databuf["opMode"] = self.dataBuffer["opMode"]
+        self.databuf["boardMode"] = self.dataBuffer["boardMode"]
+        self.databuf["manualLevel"] = self.dataBuffer["manualLevel"]
+
         if self.databuf != self.dataCopy:
             print("config different")
             with open('config.json', mode='w') as file_obj:
