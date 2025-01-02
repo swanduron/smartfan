@@ -75,18 +75,21 @@ fakePwmPin.freq(4000)
 fakePwmPin.duty_u16(0xffff // 2)
 
 
+# This function is used to run the board under different mode
 if dataBuffer["opMode"] == 0:
-    pass
+    print("opMode = 0")
 else:
-    pass
+    print("opMode = 1")
 
 while True:
     m = (dataComposer(dataBuffer))
     displayEngine(m, ledDisplay, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED)
     upBtn.update()
     downBtn.update()
-
-    pwmPercent = int(rangeMapping(m['lowLevel'], m['highLevel'], m['temp']) * 100)
-    fanPwmPin.duty_u16(int(0xFFFF * pwmPercent // 100))
-
+    modeBtn.update()
+    if dataBuffer["opMode"] == 1:
+        pwmPercent = int(rangeMapping(m['lowLevel'], m['highLevel'], m['temp']) * 100)
+        fanPwmPin.duty_u16(int(0xFFFF * pwmPercent // 100))
+    elif dataBuffer["opMode"] == 0:
+        fanPwmPin.duty_u16(int(0xFFFF * dataBuffer['manualLevel'] // 10))
 
