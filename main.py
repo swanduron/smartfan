@@ -44,6 +44,8 @@ buttonLine = NeoPixel(tempsetPin, 8)
 sysStatus = Pin(20, Pin.OUT)
 statPoint = NeoPixel(sysStatus, 1)
 
+systemBeep = Pin(22, Pin.OUT)
+
 spi = SPI(1, 10_000_000)
 chipSSPin = Pin(9, Pin.OUT)
 ledDisplay = max7219_8digit.Display(spi, chipSSPin)
@@ -83,7 +85,7 @@ else:
 
 while True:
     m = (dataComposer(dataBuffer))
-    displayEngine(m, ledDisplay, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED)
+    displayEngine(m, ledDisplay, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED, systemBeep)
     upBtn.update()
     downBtn.update()
     modeBtn.update()
