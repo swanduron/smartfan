@@ -12,6 +12,12 @@ The project is based on the Micropython project and RP2040 chip, the total cost 
 - The setting can be saved
 - The easy way to identify the FAN or sensors which one of them has hardware failure
 
+# Usage
+The board can be used below ways:
+1. GPU fan speed management
+2. Pump speed of the external liquid cooling system
+3. The same usage is familiar to me
+
 # Board picture
 ![Board](Media/IMG_1095.jpg)
 
@@ -31,5 +37,11 @@ The project is based on the Micropython project and RP2040 chip, the total cost 
 3. The system checks the configuration every 5 seconds, and any configuration will be saved.
 4. The board has 2 ways to detect temperature through 18B20. System will align the PWM duty to the higher temperature and the temperature range.
 5. Any sensors getting offline doesn't affect the system running.
-6. If all sensors are lost, FANs have no tachometer, and the PWM duty reaches 100%, the Buzzer and all LEDs will alert you.
-7. Each exception will be recorded to the internal FLASH memory.
+6. If all sensors losing, FAN having no tachometer, and the PWM duty reaching to 100%, the Buzzer and all LEDs will alert you.
+7. Each exception will be recoreded to the internal FLASH memory.
+8. The FAKESIGNAL outputs 4K 50% duty PWM pulse to feed the device tachometer
+
+# Reference project
+I appreciate the above contributors. The project can't be finished without their help.
+- pdwerryhouse/max7219_8digit: https://github.com/pdwerryhouse/max7219_8digit
+- ubidefeo/MicroPython-Button: https://github.com/ubidefeo/MicroPython-Button
