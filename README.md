@@ -15,3 +15,6 @@ The project is based on the Micropython project and RP2040 chip, the total cost 
 # Chips
 - RP2040
 - MAX7219
+
+# Board picture
+![Board][Media\IMG_1095.HEIC]
