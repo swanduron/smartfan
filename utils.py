@@ -1,4 +1,9 @@
 import random
+import os
+import time
+
+MAX_LOG_SIZE = 50 * 1024  # 50KB limit
+LOG_FILE = "error.log"
 
 
 # @brief This function is used to calc the percentage of the temperature in certain range
@@ -214,6 +219,32 @@ def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, 
         t2OK.value(0)
         t1OK.value(1)
 
+# This function is used to log errors to a file
+def log_error(e):
+    try:
+        timestamp = time.time()
+        log_entry = f"{timestamp}: {str(e)}\n"
+        
+        # Check file size
+        try:
+            size = os.stat(LOG_FILE)[6]
+            if size > MAX_LOG_SIZE:
+                # Rotate: read last portion of file
+                with open(LOG_FILE, 'r') as f:
+                    content = f.readlines()[-100:]  # Keep last 100 lines
+                with open(LOG_FILE, 'w') as f:
+                    f.writelines(content)
+        except OSError:
+            # File doesn't exist yet
+            pass
+            
+        # Append new log
+        with open(LOG_FILE, 'a') as f:
+            f.write(log_entry)
+            
+    except Exception:
+        # If logging fails, print to console
+        print(f"Error logging: {str(e)}")
 
 if "__main__" == __name__:
     fakaData = {
