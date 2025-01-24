@@ -1,4 +1,9 @@
 import random
+import os
+import time
+
+MAX_LOG_SIZE = 50 * 1024  # 50KB limit
+LOG_FILE = "error.log"
 
 
 # @brief This function is used to calc the percentage of the temperature in certain range
@@ -113,7 +118,7 @@ def dataComposer(globalDataBuffer):
 #     "boardMode": 0
 #     "manualLevel": 0
 # }
-def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED):
+def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED, beep):
 
     ### display the LED string following the temperature and speed
     # show the modeLED
@@ -140,8 +145,10 @@ def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, 
         # if dataBuffer['speed'] == 0 or dataBuffer['alarmBit'] == True:
         if dataBuffer['alarmBit'] == True or (speedLevel != 0 and dataBuffer['speed'] == 0):
             redFlag = True
+            beep.value(1)
         else:
             redFlag = False
+            beep.value(0)
 
         if speedLevel == 0:
             for i in range(10):
@@ -185,7 +192,14 @@ def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, 
         statPoint[0] = dataBuffer["dotColor"]
         statPoint.write()
     elif dataBuffer["opMode"] == 0: # in fix mode
-        lineColor = (35, 35, 10)
+        if dataBuffer["manualLevel"] != 0 and dataBuffer['speed'] == 0:
+            redFlag = True # Add code to keep the consistant of the redFlag
+            lineColor = (50, 0, 0)
+            beep.value(1)
+        else:
+            redFlag = False
+            lineColor = (35, 35, 10)
+            beep.value(0)
         for i in range(10):
             if i < dataBuffer["manualLevel"]:
                 speedLine[i] = lineColor
@@ -205,6 +219,32 @@ def displayEngine(dataBuffer, MAX7219display, speedLine, buttonLine, statPoint, 
         t2OK.value(0)
         t1OK.value(1)
 
+# This function is used to log errors to a file
+def log_error(e):
+    try:
+        timestamp = time.time()
+        log_entry = f"{timestamp}: {str(e)}\n"
+        
+        # Check file size
+        try:
+            size = os.stat(LOG_FILE)[6]
+            if size > MAX_LOG_SIZE:
+                # Rotate: read last portion of file
+                with open(LOG_FILE, 'r') as f:
+                    content = f.readlines()[-100:]  # Keep last 100 lines
+                with open(LOG_FILE, 'w') as f:
+                    f.writelines(content)
+        except OSError:
+            # File doesn't exist yet
+            pass
+            
+        # Append new log
+        with open(LOG_FILE, 'a') as f:
+            f.write(log_entry)
+            
+    except Exception:
+        # If logging fails, print to console
+        print(f"Error logging: {str(e)}")
 
 if "__main__" == __name__:
     fakaData = {

@@ -1,7 +1,7 @@
 from ds18x20 import DS18X20
 from onewire import OneWire
 
-from machine import Pin, SPI, Timer, PWM, WDT
+from machine import Pin, SPI, Timer, PWM, WDT, reset
 from neopixel import NeoPixel
 from mp_button import Button
 import max7219_8digit
@@ -44,7 +44,9 @@ buttonLine = NeoPixel(tempsetPin, 8)
 sysStatus = Pin(20, Pin.OUT)
 statPoint = NeoPixel(sysStatus, 1)
 
-spi = SPI(1, 10_000_000)
+systemBeep = Pin(22, Pin.OUT)
+
+spi = SPI(1, 1_000_000)
 chipSSPin = Pin(9, Pin.OUT)
 ledDisplay = max7219_8digit.Display(spi, chipSSPin)
 
@@ -82,14 +84,25 @@ else:
     print("opMode = 1")
 
 while True:
-    m = (dataComposer(dataBuffer))
-    displayEngine(m, ledDisplay, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED)
-    upBtn.update()
-    downBtn.update()
-    modeBtn.update()
-    if dataBuffer["opMode"] == 1:
-        pwmPercent = int(rangeMapping(m['lowLevel'], m['highLevel'], m['temp']) * 100)
-        fanPwmPin.duty_u16(int(0xFFFF * pwmPercent // 100))
-    elif dataBuffer["opMode"] == 0:
-        fanPwmPin.duty_u16(int(0xFFFF * dataBuffer['manualLevel'] // 10))
+    try:
+        m = (dataComposer(dataBuffer))
+        displayEngine(m, ledDisplay, speedLine, buttonLine, statPoint, t1OK, t2OK, modeLED, systemBeep)
+        upBtn.update()
+        downBtn.update()
+        modeBtn.update()
+        if dataBuffer["opMode"] == 1:
+            pwmPercent = int(rangeMapping(m['lowLevel'], m['highLevel'], m['temp']) * 100)
+            fanPwmPin.duty_u16(int(0xFFFF * pwmPercent // 100))
+        elif dataBuffer["opMode"] == 0:
+            fanPwmPin.duty_u16(int(0xFFFF * dataBuffer['manualLevel'] // 10))
+    
+    # except KeyboardInterrupt: # The code is under struct. It's used to disable WDT when manually stopping the code
+        # disable_watchdog()
+        # break
 
+    except Exception as e:
+        log_error(e)
+        systemBeep.value(1)
+        time.sleep(0.1)
+        systemBeep.value(0)
+        reset()
